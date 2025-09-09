@@ -37,6 +37,7 @@
     #pdfBtn{background:#1b2436}
     .note{color:var(--muted);font-size:12px;margin-top:8px}
 
+    /* Hoja PDF */
     #printSheet{display:none}
     #printSheet .sheet{
       width:210mm; min-height:297mm; padding:18mm; background:#fff; color:#111; 
@@ -67,7 +68,71 @@
 
     <div class="card">
       <h2>Entradas</h2>
-      <!-- aquí irían tus inputs como antes -->
+      <div class="row">
+        <div class="field">
+          <div class="label">Cantidad de placas (lote)</div>
+          <input id="qty" type="number" inputmode="numeric" placeholder="ej. 50" value="">
+        </div>
+
+        <div class="group">
+          <h3>Precios por componente</h3>
+          <div class="inputs2">
+            <div class="field">
+              <div class="label">TOP (€)</div>
+              <input id="topEUR" type="text" value="0.06" oninput="syncPair('top','EUR');">
+            </div>
+            <div class="field">
+              <div class="label">TOP (ptas)</div>
+              <input id="topPTA" type="text" value="" oninput="syncPair('top','PTA');">
+            </div>
+
+            <div class="field">
+              <div class="label">BOTTOM (€)</div>
+              <input id="botEUR" type="text" value="0.13" oninput="syncPair('bot','EUR');">
+            </div>
+            <div class="field">
+              <div class="label">BOTTOM (ptas)</div>
+              <input id="botPTA" type="text" value="" oninput="syncPair('bot','PTA');">
+            </div>
+
+            <div class="field">
+              <div class="label">SMD (€)</div>
+              <input id="smdEUR" type="text" value="0.13" oninput="syncPair('smd','EUR');">
+            </div>
+            <div class="field">
+              <div class="label">SMD (ptas)</div>
+              <input id="smdPTA" type="text" value="" oninput="syncPair('smd','PTA');">
+            </div>
+          </div>
+          <div class="note">Conversión fija: 1 € = 166,386 ptas. Escribe en € o en ptas; el otro campo se actualiza solo.</div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <div class="field">
+          <div class="label">Componentes TOP por placa</div>
+          <input id="topCount" type="number" inputmode="numeric" placeholder="ej. 10" value="">
+        </div>
+        <div class="field">
+          <div class="label">Componentes BOTTOM por placa</div>
+          <input id="botCount" type="number" inputmode="numeric" placeholder="ej. 5" value="">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <div class="field">
+          <div class="label">Componentes SMD por placa</div>
+          <input id="smdCount" type="number" inputmode="numeric" placeholder="ej. 20" value="">
+        </div>
+        <div class="field">
+          <div class="label">&nbsp;</div>
+          <div class="actions">
+            <button id="calcBtn" type="button" onclick="calc()">Calcular</button>
+            <button id="pdfBtn" type="button" onclick="exportPDF()">Exportar PDF</button>
+            <button id="resetBtn" type="button" onclick="resetAll()">Reset</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="card">
@@ -77,12 +142,6 @@
       <div class="kpi"><span>Coste SMD por placa</span><span id="smdPerBoard">—</span></div>
       <div class="kpi"><strong>Total por placa</strong><strong id="totalPerBoard">—</strong></div>
       <div class="kpi"><strong>Total del lote</strong><strong id="totalLot">—</strong></div>
-    </div>
-
-    <div class="actions">
-      <button id="calcBtn" type="button" onclick="calc()">Calcular</button>
-      <button id="pdfBtn" type="button" onclick="exportPDF()">Exportar PDF</button>
-      <button id="resetBtn" type="button" onclick="resetAll()">Reset</button>
     </div>
   </div>
 
@@ -113,63 +172,82 @@
     var EUR_TO_PTAS = 166.386;
     var syncing = false;
 
-    function num(v){ if (typeof v!=="string") v=String(v??""); v=v.replace(',', '.').replace(/[^0-9.\-]/g,''); var n=parseFloat(v); return isFinite(n)?n:0; }
-    function fmtEUR(v){ v=Math.round(v*10000)/10000; return "€ "+v.toFixed(4); }
+    function num(v){
+      if (typeof v !== 'string') v = String(v == null ? '' : v);
+      v = v.replace(',', '.').replace(/[^0-9.\-]/g, '');
+      var n = parseFloat(v);
+      return isFinite(n) ? n : 0;
+    }
+    function fmtEUR(v){ v = Math.round(v*10000)/10000; return "€ " + v.toFixed(4); }
 
-    function syncPair(base,from){
-      if(syncing) return;
-      syncing=true;
-      var eurInput=document.getElementById(base+"EUR");
-      var ptaInput=document.getElementById(base+"PTA");
-      if(from==="EUR"){
-        var eur=num(eurInput.value);
-        var pta=eur*EUR_TO_PTAS;
-        ptaInput.value=eurInput.value===""?"":(Math.round(pta*100)/100).toFixed(2);
+    function syncPair(base, from){
+      if (syncing) return;
+      syncing = true;
+      var eurInput = document.getElementById(base + "EUR");
+      var ptaInput = document.getElementById(base + "PTA");
+
+      if (from === "EUR"){
+        var eur = num(eurInput.value);
+        var pta = eur * EUR_TO_PTAS;
+        ptaInput.value = eurInput.value === "" ? "" : (Math.round(pta*100)/100).toFixed(2);
       } else {
-        var pta2=num(ptaInput.value);
-        var eur2=pta2/EUR_TO_PTAS;
-        eurInput.value=ptaInput.value===""?"":(Math.round(eur2*10000)/10000).toFixed(4);
+        var pta2 = num(ptaInput.value);
+        var eur2 = pta2 / EUR_TO_PTAS;
+        eurInput.value = ptaInput.value === "" ? "" : (Math.round(eur2*10000)/10000).toFixed(4);
       }
-      syncing=false;
+      syncing = false;
     }
 
     function calc(){
       syncPair('top','EUR'); syncPair('bot','EUR'); syncPair('smd','EUR');
-      var qty=num(document.getElementById("qty")?.value);
-      var topCount=num(document.getElementById("topCount")?.value);
-      var botCount=num(document.getElementById("botCount")?.value);
-      var smdCount=num(document.getElementById("smdCount")?.value);
-      var topEUR=num(document.getElementById("topEUR")?.value);
-      var botEUR=num(document.getElementById("botEUR")?.value);
-      var smdEUR=num(document.getElementById("smdEUR")?.value);
-      var top=topCount*topEUR, bot=botCount*botEUR, smd=smdCount*smdEUR;
-      var total=top+bot+smd, lot=total*qty;
-      document.getElementById("topPerBoard").textContent=fmtEUR(top);
-      document.getElementById("botPerBoard").textContent=fmtEUR(bot);
-      document.getElementById("smdPerBoard").textContent=fmtEUR(smd);
-      document.getElementById("totalPerBoard").textContent=fmtEUR(total);
-      document.getElementById("totalLot").textContent=fmtEUR(lot);
+
+      var qty = num(document.getElementById("qty").value);
+      var topCount = num(document.getElementById("topCount").value);
+      var botCount = num(document.getElementById("botCount").value);
+      var smdCount = num(document.getElementById("smdCount").value);
+
+      var topEUR = num(document.getElementById("topEUR").value);
+      var botEUR = num(document.getElementById("botEUR").value);
+      var smdEUR = num(document.getElementById("smdEUR").value);
+
+      var top = topCount * topEUR;
+      var bot = botCount * botEUR;
+      var smd = smdCount * smdEUR;
+      var total = top + bot + smd;
+      var lot = total * qty;
+
+      document.getElementById("topPerBoard").textContent   = fmtEUR(top);
+      document.getElementById("botPerBoard").textContent   = fmtEUR(bot);
+      document.getElementById("smdPerBoard").textContent   = fmtEUR(smd);
+      document.getElementById("totalPerBoard").textContent = fmtEUR(total);
+      document.getElementById("totalLot").textContent      = fmtEUR(lot);
     }
 
     function resetAll(){
-      ["qty","topCount","botCount","smdCount","topEUR","topPTA","botEUR","botPTA","smdEUR","smdPTA"]
-      .forEach(id=>{var el=document.getElementById(id); if(el) el.value="";});
-      ["topPerBoard","botPerBoard","smdPerBoard","totalPerBoard","totalLot"]
-      .forEach(id=>document.getElementById(id).textContent="—");
+      var fields = ["qty","topCount","botCount","smdCount","topEUR","topPTA","botEUR","botPTA","smdEUR","smdPTA"];
+      fields.forEach(function(id){ var el = document.getElementById(id); if (el) el.value = ""; });
+      var outs = ["topPerBoard","botPerBoard","smdPerBoard","totalPerBoard","totalLot"];
+      outs.forEach(function(id){ document.getElementById(id).textContent = "—"; });
     }
 
     function exportPDF(){
       calc();
-      document.getElementById("pLogo").src=LOGO_URL;
-      var now=new Date();
-      var fecha=now.toLocaleDateString('es-ES')+" "+now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-      document.getElementById("pDate").textContent="Generado: "+fecha;
-      document.getElementById("pTopCount").textContent=document.getElementById("topCount")?.value||"—";
-      document.getElementById("pBotCount").textContent=document.getElementById("botCount")?.value||"—";
-      document.getElementById("pSmdCount").textContent=document.getElementById("smdCount")?.value||"—";
-      document.getElementById("pCostPerUnit").textContent=document.getElementById("totalPerBoard")?.textContent||"—";
+      document.getElementById("pLogo").src = LOGO_URL;
+      var now = new Date();
+      var fecha = now.toLocaleDateString('es-ES') + " " + now.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'});
+      document.getElementById("pDate").textContent = "Generado: " + fecha;
+      document.getElementById("pTopCount").textContent = document.getElementById("topCount").value || "—";
+      document.getElementById("pBotCount").textContent = document.getElementById("botCount").value || "—";
+      document.getElementById("pSmdCount").textContent = document.getElementById("smdCount").value || "—";
+      document.getElementById("pCostPerUnit").textContent = document.getElementById("totalPerBoard").textContent || "—";
       window.print();
     }
+
+    (function init(){
+      document.getElementById("logo").src = LOGO_URL;
+      document.getElementById("pLogo").src = LOGO_URL;
+      syncPair('top','EUR'); syncPair('bot','EUR'); syncPair('smd','EUR');
+    })();
   </script>
 </body>
 </html>
