@@ -33,8 +33,7 @@
     /* Hoja PDF (A4) */
     #printSheet{display:none}
     #printSheet .sheet{width:210mm;min-height:297mm;padding:18mm;background:#fff;color:#111;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
-    #printSheet header{display:flex;align-items:center;gap:14px;margin-bottom:8mm}
-    #printSheet header img{height:30px;width:auto}
+    #printSheet header{margin-bottom:8mm}
     #printSheet h2{font-size:20px;margin:0}
     #printSheet .sub{color:#555;margin-top:2px;font-size:12px}
     #printSheet table{width:100%;border-collapse:collapse;margin-top:6mm;font-size:14px}
@@ -47,7 +46,6 @@
 <body>
   <div class="shell app">
     <header>
-      <!-- OJO: el logo NO se muestra en pantalla, solo en el PDF -->
       <h1>Calculadora de Inserción</h1>
     </header>
 
@@ -104,15 +102,12 @@
     </div>
   </div>
 
-  <!-- Hoja PDF oculta (solo aparece al imprimir) -->
+  <!-- Hoja PDF oculta (sin logo) -->
   <div id="printSheet">
     <div class="sheet">
       <header>
-        <img id="pLogo" src="https://time-group.es/logocorreo1" alt="Logo">
-        <div>
-          <h2>Resumen de coste de inserción</h2>
-          <div class="sub" id="pDate"></div>
-        </div>
+        <h2>Resumen de coste de inserción</h2>
+        <div class="sub" id="pDate"></div>
       </header>
       <table>
         <thead><tr><th>Concepto</th><th>Valor</th></tr></thead>
@@ -127,17 +122,13 @@
   </div>
 
   <script>
-    // ========= Config =========
     const EXPORT_HASH = "c8f664b113733153c7f16fa2923a48a2de0eda60fc9f94ce9f556eff80eaa7a3";
-
     const EUR_TO_PTAS = 166.386;
     let syncing = false;
 
-    // ========= Utilidades numéricas =========
     function num(v){ if(typeof v!=="string") v=String(v??""); v=v.replace(',', '.').replace(/[^0-9.\-]/g,''); const n=parseFloat(v); return isFinite(n)?n:0; }
     function fmtEUR(v){ v=Math.round(v*10000)/10000; return "€ "+v.toFixed(4); }
 
-    // € <-> ptas bidireccional
     function syncPair(base,from){
       if(syncing)return; syncing=true;
       const eurInput=document.getElementById(base+"EUR");
@@ -152,7 +143,6 @@
       syncing=false;
     }
 
-    // Cálculo (solo con €)
     function calc(){
       syncPair('top','EUR'); syncPair('bot','EUR'); syncPair('smd','EUR');
       const qty=num(document.getElementById("qty").value);
@@ -178,7 +168,6 @@
       ["topPerBoard","botPerBoard","smdPerBoard","totalPerBoard","totalLot"].forEach(id=>document.getElementById(id).textContent="—");
     }
 
-    // ========= Protección de exportación =========
     async function sha256Hex(text){
       const enc=new TextEncoder().encode(text);
       const buf=await crypto.subtle.digest("SHA-256", enc);
@@ -199,7 +188,6 @@
       const ok = await checkExportAuth();
       if(!ok) return;
       calc();
-      // Rellenar hoja de impresión
       const now=new Date();
       const fecha=now.toLocaleDateString('es-ES')+" "+now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
       document.getElementById("pDate").textContent="Generado: "+fecha;
@@ -210,10 +198,7 @@
       window.print();
     }
 
-    // Inicialización mínima
-    (function init(){
-      syncPair('top','EUR'); syncPair('bot','EUR'); syncPair('smd','EUR');
-    })();
+    (function init(){ syncPair('top','EUR'); syncPair('bot','EUR'); syncPair('smd','EUR'); })();
   </script>
 </body>
 </html>
