@@ -5,22 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Calculadora de Inserción</title>
   <style>
-    body{font-family:sans-serif;background:#0f1115;color:#eee;padding:20px;margin:0}
-    .card{background:#161a22;padding:20px;border-radius:12px;margin-bottom:20px}
-    h2{margin:0 0 10px 0}
-    label{display:block;margin-top:10px}
-    .row{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
+    :root{
+      --bg:#0f1115;--panel:#161a22;--ink:#e8edf2;--muted:#b0b8c6;--border:#2a2f3a;--accent:#6ee7b7;
+    }
+    *{box-sizing:border-box}
+    body{font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial;background:var(--bg);color:var(--ink);margin:0;padding:18px}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px}
+    h2{margin:0 0 10px 0;font-size:18px}
+    .row{display:grid;grid-template-columns:1fr;gap:12px}
     @media (min-width:900px){ .row{grid-template-columns:1fr 1fr} }
-    .group{border:1px solid #2a2f3a;border-radius:10px;padding:10px}
-    .group h3{margin:0 0 8px 0;font-size:14px;color:#bfc6d4}
-    .inputs2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .inputs2 > div{display:flex;flex-direction:column}
-    .inputs2 label{margin-top:0}
-    input{width:100%;padding:10px;margin-top:4px;border-radius:8px;border:1px solid #333;background:#0b0f16;color:#fff}
-    button{margin-top:12px;padding:10px 14px;border:0;border-radius:8px;cursor:pointer;font-weight:600}
-    #calcBtn{background:#6ee7b7;color:#000}
-    #resetBtn{background:#333;color:#eee;margin-left:8px}
-    .kpi{margin:6px 0;padding:10px;border:1px solid #333;border-radius:8px;display:flex;justify-content:space-between}
+    .group{border:1px solid var(--border);border-radius:12px;padding:12px}
+    .group h3{margin:0 0 10px 0;font-size:14px;color:#c9d1dd}
+    .inputs2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .field{display:flex;flex-direction:column}
+    .label{font-size:12px;letter-spacing:.4px;color:#c9d1dd;margin-bottom:6px;text-transform:uppercase}
+    input{
+      width:100%;height:46px;padding:10px 12px;border-radius:10px;border:1px solid #394153;
+      background:#0b0f16;color:var(--ink);font-size:16px;outline:none;
+    }
+    input::placeholder{color:#6f7a8f}
+    .kpi{display:flex;justify-content:space-between;gap:12px;padding:12px;border:1px dashed #2a3241;border-radius:10px;margin:8px 0;font-variant-numeric:tabular-nums}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    button{height:44px;padding:0 14px;border-radius:10px;border:1px solid #233049;background:#0b1020;color:#cfe0ff;font-weight:700}
+    #calcBtn{background:linear-gradient(135deg,#6ee7b7,#7dd3fc);color:#0b1020;border:0}
+    .note{color:var(--muted);font-size:12px;margin-top:8px}
   </style>
 </head>
 <body>
@@ -28,75 +36,64 @@
     <h2>Entradas</h2>
 
     <div class="row">
-      <div>
-        <label>Cantidad de placas (lote)
-          <input id="qty" type="number" value="">
-        </label>
+      <div class="field">
+        <div class="label">Cantidad de placas (lote)</div>
+        <input id="qty" type="number" inputmode="numeric" placeholder="ej. 50" value="">
       </div>
+
       <div class="group">
         <h3>Precios por componente</h3>
         <div class="inputs2">
-          <div>
-            <label>TOP (€)
-              <input id="topEUR" type="text" value="0.06" oninput="syncPair('top','EUR');">
-            </label>
+          <div class="field">
+            <div class="label">TOP (€)</div>
+            <input id="topEUR" type="text" value="0.06" oninput="syncPair('top','EUR');">
           </div>
-          <div>
-            <label>TOP (ptas)
-              <input id="topPTA" type="text" value="" oninput="syncPair('top','PTA');">
-            </label>
+          <div class="field">
+            <div class="label">TOP (ptas)</div>
+            <input id="topPTA" type="text" value="" oninput="syncPair('top','PTA');">
           </div>
 
-          <div>
-            <label>BOTTOM (€)
-              <input id="botEUR" type="text" value="0.13" oninput="syncPair('bot','EUR');">
-            </label>
+          <div class="field">
+            <div class="label">BOTTOM (€)</div>
+            <input id="botEUR" type="text" value="0.13" oninput="syncPair('bot','EUR');">
           </div>
-          <div>
-            <label>BOTTOM (ptas)
-              <input id="botPTA" type="text" value="" oninput="syncPair('bot','PTA');">
-            </label>
+          <div class="field">
+            <div class="label">BOTTOM (ptas)</div>
+            <input id="botPTA" type="text" value="" oninput="syncPair('bot','PTA');">
           </div>
 
-          <div>
-            <label>SMD (€)
-              <input id="smdEUR" type="text" value="0.13" oninput="syncPair('smd','EUR');">
-            </label>
+          <div class="field">
+            <div class="label">SMD (€)</div>
+            <input id="smdEUR" type="text" value="0.13" oninput="syncPair('smd','EUR');">
           </div>
-          <div>
-            <label>SMD (ptas)
-              <input id="smdPTA" type="text" value="" oninput="syncPair('smd','PTA');">
-            </label>
+          <div class="field">
+            <div class="label">SMD (ptas)</div>
+            <input id="smdPTA" type="text" value="" oninput="syncPair('smd','PTA');">
           </div>
         </div>
-        <div style="margin-top:6px;color:#b0b8c6;font-size:12px">
-          Conversión: 1 € = 166,386 ptas. Puedes escribir en <b>€</b> o en <b>ptas</b>; el campo de al lado se actualiza solo.
-        </div>
+        <div class="note">Conversión fija: 1 € = 166,386 ptas. Escribe en € o en ptas; el otro campo se actualiza solo.</div>
       </div>
     </div>
 
-    <div class="row">
-      <div>
-        <label>Componentes TOP por placa
-          <input id="topCount" type="number" value="">
-        </label>
+    <div class="row" style="margin-top:12px">
+      <div class="field">
+        <div class="label">Componentes TOP por placa</div>
+        <input id="topCount" type="number" inputmode="numeric" placeholder="ej. 10" value="">
       </div>
-      <div>
-        <label>Componentes BOTTOM por placa
-          <input id="botCount" type="number" value="">
-        </label>
+      <div class="field">
+        <div class="label">Componentes BOTTOM por placa</div>
+        <input id="botCount" type="number" inputmode="numeric" placeholder="ej. 5" value="">
       </div>
     </div>
 
-    <div class="row">
-      <div>
-        <label>Componentes SMD por placa
-          <input id="smdCount" type="number" value="">
-        </label>
+    <div class="row" style="margin-top:12px">
+      <div class="field">
+        <div class="label">Componentes SMD por placa</div>
+        <input id="smdCount" type="number" inputmode="numeric" placeholder="ej. 20" value="">
       </div>
-      <div>
-        <label>&nbsp;</label>
-        <div>
+      <div class="field">
+        <div class="label">&nbsp;</div>
+        <div class="actions">
           <button id="calcBtn" type="button" onclick="calc()">Calcular</button>
           <button id="resetBtn" type="button" onclick="resetAll()">Reset</button>
         </div>
@@ -125,6 +122,7 @@
     }
     function fmtEUR(v){ v = Math.round(v*10000)/10000; return "€ " + v.toFixed(4); }
 
+    // Sincronización € <-> ptas
     function syncPair(base, from){
       if (syncing) return;
       syncing = true;
@@ -143,7 +141,9 @@
       syncing = false;
     }
 
+    // Cálculo (usa SOLO precios en €)
     function calc(){
+      // por si el usuario solo tocó ptas
       syncPair('top','EUR'); syncPair('bot','EUR'); syncPair('smd','EUR');
 
       var qty = num(document.getElementById("qty").value);
@@ -170,16 +170,16 @@
 
     function resetAll(){
       var fields = ["qty","topCount","botCount","smdCount","topEUR","topPTA","botEUR","botPTA","smdEUR","smdPTA"];
-      fields.forEach(id => { var el = document.getElementById(id); if (el) el.value = ""; });
+      for (var i=0;i<fields.length;i++){ var el = document.getElementById(fields[i]); if (el) el.value = ""; }
       var outs = ["topPerBoard","botPerBoard","smdPerBoard","totalPerBoard","totalLot"];
-      outs.forEach(id => document.getElementById(id).textContent = "—");
+      for (var j=0;j<outs.length;j++){ document.getElementById(outs[j]).textContent = "—"; }
     }
 
-    function init(){
+    // Inicializa ptas a partir de €
+    (function init(){
       syncPair('top','EUR'); syncPair('bot','EUR'); syncPair('smd','EUR');
-      calc();
-    }
-    init();
+      // no forzamos cálculo para que no muestre 0,0000 hasta que metas cantidades
+    })();
   </script>
 </body>
 </html>
