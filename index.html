@@ -6,10 +6,15 @@
   <title>Calculadora de Inserción</title>
   <style>
     :root{
-      --bg:#0f1115;--panel:#161a22;--ink:#e8edf2;--muted:#b0b8c6;--border:#2a2f3a;--accent:#6ee7b7;
+      --bg:#0f1115;--panel:#161a22;--ink:#e8edf2;--muted:#b0b8c6;--border:#2a2f3a;
+      --accent:#6ee7b7;--ink2:#cfe0ff;
     }
     *{box-sizing:border-box}
-    body{font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial;background:var(--bg);color:var(--ink);margin:0;padding:18px}
+    body{font-family:-apple-system,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink);margin:0;padding:18px}
+    .shell{max-width:1000px;margin:0 auto}
+    header{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+    header img{height:36px;width:auto;border-radius:6px;background:#0b0f16}
+    header h1{margin:0;font-size:20px}
     .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px}
     h2{margin:0 0 10px 0;font-size:18px}
     .row{display:grid;grid-template-columns:1fr;gap:12px}
@@ -26,94 +31,153 @@
     input::placeholder{color:#6f7a8f}
     .kpi{display:flex;justify-content:space-between;gap:12px;padding:12px;border:1px dashed #2a3241;border-radius:10px;margin:8px 0;font-variant-numeric:tabular-nums}
     .actions{display:flex;gap:10px;flex-wrap:wrap}
-    button{height:44px;padding:0 14px;border-radius:10px;border:1px solid #233049;background:#0b1020;color:#cfe0ff;font-weight:700}
+    button{height:44px;padding:0 14px;border-radius:10px;border:1px solid #233049;background:#0b1020;color:var(--ink2);font-weight:700;cursor:pointer}
     #calcBtn{background:linear-gradient(135deg,#6ee7b7,#7dd3fc);color:#0b1020;border:0}
+    #pdfBtn{background:#1b2436}
     .note{color:var(--muted);font-size:12px;margin-top:8px}
+
+    /* ---------- Hoja de impresión (PDF) ---------- */
+    #printSheet{display:none}
+    #printSheet .sheet{
+      width:210mm; min-height:297mm; padding:18mm; background:#fff; color:#111; 
+      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    }
+    #printSheet header{display:flex;align-items:center;gap:14px;margin-bottom:8mm}
+    #printSheet header img{height:30px;width:auto}
+    #printSheet h2{font-size:20px;margin:0}
+    #printSheet .sub{color:#555;margin-top:2px;font-size:12px}
+    #printSheet table{width:100%;border-collapse:collapse;margin-top:6mm;font-size:14px}
+    #printSheet th, #printSheet td{border:1px solid #ddd;padding:10px;text-align:left}
+    #printSheet th{background:#f4f6f9}
+    #printSheet .total{font-weight:700}
+    @media print{
+      body{padding:0;background:#fff}
+      .app{display:none}
+      #printSheet{display:block}
+      @page{size:A4;margin:12mm}
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>Entradas</h2>
+  <div class="shell app">
+    <header>
+      <!-- LOGO: sube logo.png a tu repo o cambia LOGO_URL en el script -->
+      <img id="logo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
+      <h1>Calculadora de Inserción</h1>
+    </header>
 
-    <div class="row">
-      <div class="field">
-        <div class="label">Cantidad de placas (lote)</div>
-        <input id="qty" type="number" inputmode="numeric" placeholder="ej. 50" value="">
+    <div class="card">
+      <h2>Entradas</h2>
+
+      <div class="row">
+        <div class="field">
+          <div class="label">Cantidad de placas (lote)</div>
+          <input id="qty" type="number" inputmode="numeric" placeholder="ej. 50" value="">
+        </div>
+
+        <div class="group">
+          <h3>Precios por componente</h3>
+          <div class="inputs2">
+            <div class="field">
+              <div class="label">TOP (€)</div>
+              <input id="topEUR" type="text" value="0.06" oninput="syncPair('top','EUR');">
+            </div>
+            <div class="field">
+              <div class="label">TOP (ptas)</div>
+              <input id="topPTA" type="text" value="" oninput="syncPair('top','PTA');">
+            </div>
+
+            <div class="field">
+              <div class="label">BOTTOM (€)</div>
+              <input id="botEUR" type="text" value="0.13" oninput="syncPair('bot','EUR');">
+            </div>
+            <div class="field">
+              <div class="label">BOTTOM (ptas)</div>
+              <input id="botPTA" type="text" value="" oninput="syncPair('bot','PTA');">
+            </div>
+
+            <div class="field">
+              <div class="label">SMD (€)</div>
+              <input id="smdEUR" type="text" value="0.13" oninput="syncPair('smd','EUR');">
+            </div>
+            <div class="field">
+              <div class="label">SMD (ptas)</div>
+              <input id="smdPTA" type="text" value="" oninput="syncPair('smd','PTA');">
+            </div>
+          </div>
+          <div class="note">Conversión fija: 1 € = 166,386 ptas. Escribe en € o en ptas; el otro campo se actualiza solo.</div>
+        </div>
       </div>
 
-      <div class="group">
-        <h3>Precios por componente</h3>
-        <div class="inputs2">
-          <div class="field">
-            <div class="label">TOP (€)</div>
-            <input id="topEUR" type="text" value="0.06" oninput="syncPair('top','EUR');">
-          </div>
-          <div class="field">
-            <div class="label">TOP (ptas)</div>
-            <input id="topPTA" type="text" value="" oninput="syncPair('top','PTA');">
-          </div>
+      <div class="row" style="margin-top:12px">
+        <div class="field">
+          <div class="label">Componentes TOP por placa</div>
+          <input id="topCount" type="number" inputmode="numeric" placeholder="ej. 10" value="">
+        </div>
+        <div class="field">
+          <div class="label">Componentes BOTTOM por placa</div>
+          <input id="botCount" type="number" inputmode="numeric" placeholder="ej. 5" value="">
+        </div>
+      </div>
 
-          <div class="field">
-            <div class="label">BOTTOM (€)</div>
-            <input id="botEUR" type="text" value="0.13" oninput="syncPair('bot','EUR');">
-          </div>
-          <div class="field">
-            <div class="label">BOTTOM (ptas)</div>
-            <input id="botPTA" type="text" value="" oninput="syncPair('bot','PTA');">
-          </div>
-
-          <div class="field">
-            <div class="label">SMD (€)</div>
-            <input id="smdEUR" type="text" value="0.13" oninput="syncPair('smd','EUR');">
-          </div>
-          <div class="field">
-            <div class="label">SMD (ptas)</div>
-            <input id="smdPTA" type="text" value="" oninput="syncPair('smd','PTA');">
+      <div class="row" style="margin-top:12px">
+        <div class="field">
+          <div class="label">Componentes SMD por placa</div>
+          <input id="smdCount" type="number" inputmode="numeric" placeholder="ej. 20" value="">
+        </div>
+        <div class="field">
+          <div class="label">&nbsp;</div>
+          <div class="actions">
+            <button id="calcBtn" type="button" onclick="calc()">Calcular</button>
+            <button id="pdfBtn" type="button" onclick="exportPDF()">Exportar PDF</button>
+            <button id="resetBtn" type="button" onclick="resetAll()">Reset</button>
           </div>
         </div>
-        <div class="note">Conversión fija: 1 € = 166,386 ptas. Escribe en € o en ptas; el otro campo se actualiza solo.</div>
       </div>
     </div>
 
-    <div class="row" style="margin-top:12px">
-      <div class="field">
-        <div class="label">Componentes TOP por placa</div>
-        <input id="topCount" type="number" inputmode="numeric" placeholder="ej. 10" value="">
-      </div>
-      <div class="field">
-        <div class="label">Componentes BOTTOM por placa</div>
-        <input id="botCount" type="number" inputmode="numeric" placeholder="ej. 5" value="">
-      </div>
-    </div>
-
-    <div class="row" style="margin-top:12px">
-      <div class="field">
-        <div class="label">Componentes SMD por placa</div>
-        <input id="smdCount" type="number" inputmode="numeric" placeholder="ej. 20" value="">
-      </div>
-      <div class="field">
-        <div class="label">&nbsp;</div>
-        <div class="actions">
-          <button id="calcBtn" type="button" onclick="calc()">Calcular</button>
-          <button id="resetBtn" type="button" onclick="resetAll()">Reset</button>
-        </div>
-      </div>
+    <div class="card">
+      <h2>Resultados (solo en € · sin IVA)</h2>
+      <div class="kpi"><span>Coste TOP por placa</span><span id="topPerBoard">—</span></div>
+      <div class="kpi"><span>Coste BOTTOM por placa</span><span id="botPerBoard">—</span></div>
+      <div class="kpi"><span>Coste SMD por placa</span><span id="smdPerBoard">—</span></div>
+      <div class="kpi"><strong>Total por placa</strong><strong id="totalPerBoard">—</strong></div>
+      <div class="kpi"><strong>Total del lote</strong><strong id="totalLot">—</strong></div>
     </div>
   </div>
 
-  <div class="card">
-    <h2>Resultados (solo en € · sin IVA)</h2>
-    <div class="kpi"><span>Coste TOP por placa</span><span id="topPerBoard">—</span></div>
-    <div class="kpi"><span>Coste BOTTOM por placa</span><span id="botPerBoard">—</span></div>
-    <div class="kpi"><span>Coste SMD por placa</span><span id="smdPerBoard">—</span></div>
-    <div class="kpi"><strong>Total por placa</strong><strong id="totalPerBoard">—</strong></div>
-    <div class="kpi"><strong>Total del lote</strong><strong id="totalLot">—</strong></div>
+  <!-- ======= Hoja oculta para imprimir (PDF) ======= -->
+  <div id="printSheet">
+    <div class="sheet">
+      <header>
+        <img id="pLogo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
+        <div>
+          <h2>Resumen de coste de inserción</h2>
+          <div class="sub" id="pDate"></div>
+        </div>
+      </header>
+
+      <table>
+        <thead>
+          <tr><th>Concepto</th><th>Valor</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nº componentes TOP por placa</td><td id="pTopCount">—</td></tr>
+          <tr><td>Nº componentes BOTTOM por placa</td><td id="pBotCount">—</td></tr>
+          <tr><td>Nº componentes SMD por placa</td><td id="pSmdCount">—</td></tr>
+          <tr class="total"><td>Coste por unidad de placa (sin IVA)</td><td id="pCostPerUnit">—</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <script>
+    // -------- Config --------
+    var LOGO_URL = "logo.png";       // cambia a tu URL si no usas logo.png local
     var EUR_TO_PTAS = 166.386;
     var syncing = false;
 
+    // -------- Utilidades --------
     function num(v){
       if (typeof v !== 'string') v = String(v == null ? '' : v);
       v = v.replace(',', '.').replace(/[^0-9.\-]/g, '');
@@ -170,15 +234,39 @@
 
     function resetAll(){
       var fields = ["qty","topCount","botCount","smdCount","topEUR","topPTA","botEUR","botPTA","smdEUR","smdPTA"];
-      for (var i=0;i<fields.length;i++){ var el = document.getElementById(fields[i]); if (el) el.value = ""; }
+      fields.forEach(function(id){ var el = document.getElementById(id); if (el) el.value = ""; });
       var outs = ["topPerBoard","botPerBoard","smdPerBoard","totalPerBoard","totalLot"];
-      for (var j=0;j<outs.length;j++){ document.getElementById(outs[j]).textContent = "—"; }
+      outs.forEach(function(id){ document.getElementById(id).textContent = "—"; });
     }
 
-    // Inicializa ptas a partir de €
+    // -------- Exportar a PDF (via impresión) --------
+    function exportPDF(){
+      // aseguramos que los cálculos están al día
+      calc();
+
+      // rellenamos la hoja de impresión
+      document.getElementById("pLogo").src = LOGO_URL;
+      var now = new Date();
+      var fecha = now.toLocaleDateString('es-ES') + " " + now.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'});
+      document.getElementById("pDate").textContent = "Generado: " + fecha;
+
+      document.getElementById("pTopCount").textContent = document.getElementById("topCount").value || "—";
+      document.getElementById("pBotCount").textContent = document.getElementById("botCount").value || "—";
+      document.getElementById("pSmdCount").textContent = document.getElementById("smdCount").value || "—";
+      document.getElementById("pCostPerUnit").textContent = document.getElementById("totalPerBoard").textContent || "—";
+
+      // abre el diálogo de impresión (en iPhone puedes "Guardar en Archivos" como PDF)
+      window.print();
+    }
+
+    // Inicialización mínima
     (function init(){
+      // asegura que el logo de la app y el del PDF usan la misma ruta
+      var appLogo = document.getElementById("logo");
+      if (appLogo) appLogo.src = LOGO_URL;
+      document.getElementById("pLogo").src = LOGO_URL;
+      // precarga campos de ptas desde €
       syncPair('top','EUR'); syncPair('bot','EUR'); syncPair('smd','EUR');
-      // no forzamos cálculo para que no muestre 0,0000 hasta que metas cantidades
     })();
   </script>
 </body>
