@@ -35,15 +35,16 @@
     <div class="kpi"><span>Coste BOTTOM por placa</span><span id="botPerBoard">—</span></div>
     <div class="kpi"><span>Coste SMD por placa</span><span id="smdPerBoard">—</span></div>
     <div class="kpi"><strong>Total por placa</strong><strong id="totalPerBoard">—</strong></div>
-    <div class="kpi"><span>Total por placa (ptas)</span><span id="totalPerBoardPTA">—</span></div>
-    <div class="kpi"><span>Total del lote</span><span id="totalLot">—</span></div>
-    <div class="kpi"><span>Total del lote (ptas)</span><span id="totalLotPTA">—</span></div>
+    <div class="kpi"><strong>Total del lote</strong><strong id="totalLot">—</strong></div>
   </div>
 
   <script>
     var EUR_TO_PTAS = 166.386;
-    function euro(v){ v = Math.round(v*10000)/10000; return "€ " + v.toFixed(4); }
-    function pta(v){ v = Math.round(v*100)/100; return v.toFixed(2) + " ptas"; }
+    function euroConPesetas(v){
+      var eur = Math.round(v*10000)/10000;
+      var pta = Math.round(v*EUR_TO_PTAS*100)/100;
+      return "€ " + eur.toFixed(4) + " (" + pta.toFixed(2) + " ptas)";
+    }
     function num(v){ v = String(v).replace(',', '.'); var n = parseFloat(v); return isFinite(n) ? n : 0; }
     function setText(id, val){ document.getElementById(id).textContent = val; }
 
@@ -60,23 +61,20 @@
       var bot = botCount * botPrice;
       var smd = smdCount * smdPrice;
       var total = top + bot + smd;
-
-      setText("topPerBoard", euro(top));
-      setText("botPerBoard", euro(bot));
-      setText("smdPerBoard", euro(smd));
-      setText("totalPerBoard", euro(total));
-      setText("totalPerBoardPTA", pta(total * EUR_TO_PTAS));
-
       var lot = total * qty;
-      setText("totalLot", euro(lot));
-      setText("totalLotPTA", pta(lot * EUR_TO_PTAS));
+
+      setText("topPerBoard", euroConPesetas(top));
+      setText("botPerBoard", euroConPesetas(bot));
+      setText("smdPerBoard", euroConPesetas(smd));
+      setText("totalPerBoard", euroConPesetas(total));
+      setText("totalLot", euroConPesetas(lot));
     }
 
     function resetAll(){
       ["qty","topCount","botCount","smdCount","topPrice","botPrice","smdPrice"].forEach(function(id){
         document.getElementById(id).value = "";
       });
-      ["topPerBoard","botPerBoard","smdPerBoard","totalPerBoard","totalPerBoardPTA","totalLot","totalLotPTA"].forEach(function(id){
+      ["topPerBoard","botPerBoard","smdPerBoard","totalPerBoard","totalLot"].forEach(function(id){
         setText(id, "—");
       });
     }
